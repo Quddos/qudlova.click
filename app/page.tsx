@@ -1,20 +1,67 @@
+"use client";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, PlayCircle, Heart, Handshake } from "lucide-react";
+import { UserButton, SignedIn, SignedOut, useUser } from "@clerk/nextjs";
+import { RedirectOnSignin } from "@/components/redirect-on-signin";
+import { useRouter } from "next/navigation";
+import { useCallback } from "react";
 
 export default function Home() {
+  const { user, isSignedIn } = useUser();
+  const router = useRouter();
+
+  // Handler for Start Your Journey button
+  const handleStartJourney = useCallback(async () => {
+    if (!isSignedIn) {
+      router.push("/auth/signin");
+      return;
+    }
+    // Check if user has a profile
+    let data = { profile: null };
+    try {
+      const res = await fetch("/api/blind-date/profile/me");
+      data = await res.json();
+    } catch {
+      data = { profile: null };
+    }
+    if (!data.profile) {
+      router.push("/blind-date/onboarding");
+    } else {
+      router.push("/profile");
+    }
+  }, [isSignedIn, router]);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 to-purple-50 text-gray-800">
+      <RedirectOnSignin />
       {/* Navigation */}
       <nav className="flex items-center justify-between p-6 max-w-7xl mx-auto">
         <div className="text-2xl font-bold text-purple-600">QudMeetBDate</div>
-        <div className="flex gap-4">
-          <Link href="/auth/signin">
-            <Button variant="ghost">Sign In</Button>
-          </Link>
-          <Link href="/auth/signup">
-            <Button>Get Started</Button>
-          </Link>
+        <div className="flex gap-4 items-center">
+          <SignedIn>
+            <UserButton
+              afterSignOutUrl="/"
+              appearance={{
+                elements: {
+                  userButtonPopoverCard: "!p-0",
+                },
+              }}
+              userProfileMode="navigation"
+              userProfileUrl="/profile"
+            />
+            <Link href="/profile" className="ml-2 text-sm font-medium text-purple-700 hover:underline">
+              Profile
+            </Link>
+          </SignedIn>
+          <SignedOut>
+            <Link href="/auth/signin">
+              <Button variant="ghost">Sign In</Button>
+            </Link>
+            <Link href="/auth/signup">
+              <Button>Get Started</Button>
+            </Link>
+          </SignedOut>
         </div>
       </nav>
 
@@ -33,11 +80,9 @@ export default function Home() {
             through our intelligent matching system.
           </p>
           <div className="flex gap-4 justify-center">
-            <Link href="/auth/signup">
-              <Button size="lg" className="text-lg px-8 py-3">
-                Start Your Journey
-              </Button>
-            </Link>
+            <Button size="lg" className="text-lg px-8 py-3" onClick={handleStartJourney}>
+              Start Your Journey
+            </Button>
           </div>
         </div>
 
