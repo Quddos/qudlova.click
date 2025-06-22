@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { Heart, PlayCircle, Handshake } from "lucide-react";
 
 const HERO_IMAGES = [
   // Unsplash or Pexels royalty-free images
@@ -37,7 +38,17 @@ export default function DashboardPage() {
     return () => clearInterval(interval);
   }, []);
 
-  if (!profile) return <div className="flex justify-center items-center min-h-screen">Loading...</div>;
+  if (profile === null) return (
+    <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-pink-50 to-purple-50">
+      <span className="text-lg font-semibold text-gray-700">Loading...</span>
+    </div>
+  );
+  if (!profile) return (
+    <div className="flex flex-col items-center justify-center min-h-screen">
+      <div className="text-2xl font-bold text-pink-700 mb-4">Complete your profile to unlock your dashboard!</div>
+      <Button onClick={() => router.push('/blind-date/onboarding')}>Go to Onboarding</Button>
+    </div>
+  );
 
   return (
     <div className="flex flex-col md:flex-row min-h-screen bg-gradient-to-br from-pink-50 to-purple-50">

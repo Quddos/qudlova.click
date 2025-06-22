@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Heart, MapPin, User, Users, Sparkles, Zap, Smile, Globe, Star } from "lucide-react";
+import toast from "react-hot-toast";
 
 const TOP_INTERESTS = ["Hiking", "K-pop", "Anime", "Travel", "Food", "Movies", "Dancing", "Art"];
 const GENDER_OPTIONS = [
@@ -19,6 +20,11 @@ const PERSONALITY_LABELS = [
   "Chill Connector",
   "Curious Soul",
   "Passionate Creator",
+];
+const LOOKING_FOR_OPTIONS = [
+  { label: "❤️ Relationship", value: "Relationship" },
+  { label: "🤝 Friendship", value: "Friendship" },
+  { label: "🎉 One time Hangout", value: "One time Hangout" },
 ];
 
 function getRandomInt(max: number) {
@@ -75,8 +81,31 @@ export default function BlindDateOnboarding() {
     }
   }, [step, form.interests]);
 
+  // Save profile (used for auto-save)
+  const saveProfile = async (partial = false) => {
+    setLoading(true);
+    const res = await fetch("/api/blind-date/profile", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        ...form,
+        age: Number(form.age),
+        partial,
+      }),
+    });
+    const result = await res.json();
+    setLoading(false);
+    if (!res.ok || result.error) {
+      toast.error(result.error || "Failed to save profile. Please try again.");
+      throw new Error(result.error || "Failed to save profile");
+    }
+  };
+
   // Step handlers
-  const handleNext = () => setStep((s) => s + 1);
+  const handleNext = async () => {
+    await saveProfile(true); // auto-save on step change
+    setStep((s) => s + 1);
+  };
   const handleBack = () => setStep((s) => s - 1);
 
   // Interest selection
@@ -91,20 +120,10 @@ export default function BlindDateOnboarding() {
   // Looking for selection
   const setLookingFor = (val: string) => setForm((f) => ({ ...f, lookingFor: val }));
 
-  // Submit handler
+  // Submit handler (final step)
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    // Save profile
-    await fetch("/api/blind-date/profile", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        ...form,
-        age: Number(form.age),
-      }),
-    });
-    setLoading(false);
+    await saveProfile(false); // final save
     // Show personality reveal
     setPersonality(PERSONALITY_LABELS[getRandomInt(PERSONALITY_LABELS.length)]);
     setTimeout(() => {
@@ -213,9 +232,17 @@ export default function BlindDateOnboarding() {
             )}
             <div className="mt-4">
               <label className="block mb-1 font-bold text-gray-800">Looking For</label>
-              <div className="flex gap-2">
-                <Button type="button" variant={form.lookingFor === "Relationship" ? "default" : "outline"} onClick={() => setLookingFor("Relationship")}>❤️ Relationship</Button>
-                <Button type="button" variant={form.lookingFor === "Friendship" ? "default" : "outline"} onClick={() => setLookingFor("Friendship")}>🤝 Friendship</Button>
+              <div className="flex gap-2 flex-wrap">
+                {LOOKING_FOR_OPTIONS.map(opt => (
+                  <Button
+                    key={opt.value}
+                    type="button"
+                    variant={form.lookingFor === opt.value ? "default" : "outline"}
+                    onClick={() => setLookingFor(opt.value)}
+                  >
+                    {opt.label}
+                  </Button>
+                ))}
               </div>
             </div>
             <div className="mt-4">
