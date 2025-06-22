@@ -17,6 +17,17 @@ A modern dating/meeting application built with Next.js, TypeScript, and Tailwind
 - [ ] User authentication (signup/login)
 - [ ] User profile management
 - [ ] Profile creation and editing
+- [] A dashboard with (ashboard Suggestions
+A dashboard can be a personalized landing page after onboarding/profile completion. Here’s what it could contain:
+Welcome message (e.g., “Welcome back, [Name]!”)
+Quick profile summary (profile photo, name, short bio, edit button)
+Next actions:
+“Find a Match” (BlindDate)
+“Go Live” (GoStream)
+“Accept a Dare” (Dare2Earn)
+Notifications (new matches, messages, dares, upcoming dates)
+Calendar (upcoming dates or events)
+Quick links (edit profile, settings, sign out)))
 - [ ] User matching algorithm
 - [ ] Chat/messaging system
 - [ ] Profile discovery and browsing
